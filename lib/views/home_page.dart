@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:share/share.dart';
+import 'package:transparent_image/transparent_image.dart';
+import 'gif_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -59,6 +62,7 @@ class _HomePageState extends State<HomePage> {
               onSubmitted: (String text) {
                 setState(() {
                   _search = text;
+                  _offset = 0;
                 });
               },
             ),
@@ -95,11 +99,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  int _getCount (List data){
-    if(_search == null){
+  int _getCount(List data) {
+    if (_search == null) {
       return data.length;
-    }else {
-      return data.length +1;
+    } else {
+      return data.length + 1;
     }
   }
 
@@ -111,13 +115,45 @@ class _HomePageState extends State<HomePage> {
         itemCount: _getCount(snapshot.data["data"]),
         itemBuilder: (context, index) {
           //torna o item da gridview apto a receber um click
-          return GestureDetector(
-            child: Image.network(
-              snapshot.data["data"][index]["images"]["fixed_height"]["url"],
-              height: 300.0,
-              fit: BoxFit.cover,
-            ),
-          );
+          if (_search == null || index < snapshot.data["data"].length)
+            return GestureDetector(
+              child: FadeInImage.memoryNetwork(
+                placeholder: kTransparentImage,
+                image: snapshot.data["data"][index]["images"]["fixed_height"]["url"],
+                height: 300.0,
+                fit: BoxFit.cover,
+              ),
+              onTap: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => GifPage(snapshot.data["data"][index]))
+                );
+              },
+              onLongPress: (){
+                Share.share(snapshot.data["data"][index]["images"]["fixed_height"]["url"]);
+              },
+            );
+          else
+            return Container(
+              child: GestureDetector(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      "Carrega mais...",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  setState(() {
+                    _offset += 19;
+                  });
+                },
+              ),
+            );
         });
   }
 }
