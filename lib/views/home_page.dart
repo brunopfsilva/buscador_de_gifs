@@ -19,7 +19,7 @@ class _HomePageState extends State<HomePage> {
           "https://api.giphy.com/v1/gifs/trending?api_key=ZIYaJEqOuapegffbBlH9nWFGGju06tnM&limit=18&rating=G");
     else {
       response = await http.get(
-          "https://api.giphy.com/v1/gifs/search?api_key=ZIYaJEqOuapegffbBlH9nWFGGju06tnM&q=$_search&limit=20&$_offset=18&rating=G&lang=en");
+          "https://api.giphy.com/v1/gifs/search?api_key=ZIYaJEqOuapegffbBlH9nWFGGju06tnM&q=$_search&limit=19&$_offset=18&rating=G&lang=en");
     }
 
     return json.decode(response.body);
@@ -56,6 +56,11 @@ class _HomePageState extends State<HomePage> {
               ),
               style: TextStyle(color: Colors.white, fontSize: 27),
               textAlign: TextAlign.center,
+              onSubmitted: (String text) {
+                setState(() {
+                  _search = text;
+                });
+              },
             ),
           ),
           Expanded(
@@ -79,7 +84,8 @@ class _HomePageState extends State<HomePage> {
                       if (snapshot.hasError)
                         return Container();
                       else
-                      return Container(child: _createGifTable(context, snapshot));
+                        return Container(
+                            child: _createGifTable(context, snapshot));
                   } //fim switch
                 } // fim do builder
                 ),
@@ -89,12 +95,20 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  int _getCount (List data){
+    if(_search == null){
+      return data.length;
+    }else {
+      return data.length +1;
+    }
+  }
+
   Widget _createGifTable(BuildContext context, AsyncSnapshot snapshot) {
     return GridView.builder(
         padding: EdgeInsets.all(10.0),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
-        itemCount: 4,
+        itemCount: _getCount(snapshot.data["data"]),
         itemBuilder: (context, index) {
           //torna o item da gridview apto a receber um click
           return GestureDetector(
